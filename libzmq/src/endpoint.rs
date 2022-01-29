@@ -171,36 +171,14 @@ pub struct Hostname {
 }
 
 impl Hostname {
-    pub fn new<S>(name: S) -> Result<Self, AddrParseError>
-    where
-        S: Into<String>,
-    {
-        let name = name.into();
-
-        if !name.is_empty() {
-            for c in name.as_str().chars() {
-                if !c.is_ascii_alphanumeric() && c != '-' {
-                    return Err(AddrParseError::new(
-                        "hostname contains illegal char",
-                    ));
-                }
-            }
-
-            Ok(Self { name })
-        } else {
-            Err(AddrParseError::new("empty hostname"))
-        }
-    }
-
     pub fn as_str(&self) -> &str {
         self.name.as_str()
     }
 }
 
-impl FromStr for Hostname {
-    type Err = AddrParseError;
-    fn from_str(s: &str) -> Result<Self, AddrParseError> {
-        Self::new(s)
+impl From<String> for Hostname {
+    fn from(name: String) -> Self {
+        Self { name }
     }
 }
 
@@ -211,27 +189,6 @@ impl fmt::Display for Hostname {
 }
 
 serde_display_tryfrom!(Hostname);
-
-impl TryFrom<String> for Hostname {
-    type Error = AddrParseError;
-    fn try_from(s: String) -> Result<Self, AddrParseError> {
-        Self::new(s)
-    }
-}
-
-impl<'a> TryFrom<&'a String> for Hostname {
-    type Error = AddrParseError;
-    fn try_from(s: &'a String) -> Result<Self, AddrParseError> {
-        Self::new(s.as_str())
-    }
-}
-
-impl<'a> TryFrom<&'a str> for Hostname {
-    type Error = AddrParseError;
-    fn try_from(s: &'a str) -> Result<Self, AddrParseError> {
-        Self::new(s)
-    }
-}
 
 /// A port used by a socket address.
 ///
@@ -329,7 +286,7 @@ impl FromStr for Interface {
             if let Ok(ip) = IpAddr::from_str(s) {
                 Ok(Interface::Ip(ip))
             } else {
-                let interface = Hostname::from_str(s)?;
+                let interface = Hostname::from(s.to_string());
                 Ok(Interface::Hostname(interface))
             }
         } else {
