@@ -27,11 +27,17 @@ fn gen_bindings(include_dir: &Path) {
         .expect("Couldn't write bindings!");
 }
 
+#[cfg(feature = "renew-bindings")]
+fn include_dir() -> PathBuf {
+    // Mirrors the layout `zeromq_src::Build::build` writes to.
+    PathBuf::from(env::var("OUT_DIR").unwrap())
+        .join("source")
+        .join("include")
+}
+
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-env-changed=PROFILE");
-
-    let enable_curve = cfg!(feature = "curve");
 
     let wants_debug = env::var_os("PROFILE").unwrap() == "debug";
 
@@ -46,16 +52,14 @@ fn main() {
         None
     };
 
-    let artifacts = zeromq_src::Build::new()
-        .link_static(true)
+    // zeromq-src always links statically and prints the cargo link metadata
+    // itself, including `cargo:include` (exposed here as `DEP_ZMQ_INCLUDE`).
+    zeromq_src::Build::new()
         .enable_draft(true)
-        .enable_curve(enable_curve)
         .build_debug(wants_debug)
         .with_libsodium(maybe_libsodium)
         .build();
 
-    artifacts.print_cargo_metadata();
-
     #[cfg(feature = "renew-bindings")]
-    gen_bindings(artifacts.include_dir());
+    gen_bindings(&include_dir());
 }

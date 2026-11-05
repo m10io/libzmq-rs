@@ -1,6 +1,6 @@
 [package]
 name = "libzmq-sys"
-version = "0.1.8+4.3.2"
+version = "0.1.9+4.3.5"
 authors = ["jean-airoldie <maxence.caron@protonmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -18,8 +18,9 @@ categories = ["external-ffi-bindings"]
 maintenance = { status = "passively-maintained" } 
 
 [features]
-default = ['curve']
-curve = []
+default = []
+# CURVE needs libsodium: zeromq-src 0.3 dropped the bundled tweetnacl fallback.
+curve = ['libsodium']
 # Renew the pre-generated `libzmq` bindings.
 renew-bindings = ['bindgen']
 libsodium = ['libsodium-sys']
@@ -32,7 +33,7 @@ libsodium-sys = { version = "0.2.3", optional = true }
 version-sync = "0.9"
 
 [build-dependencies]
-cmake = "0.1"
 bindgen = { version = "0.53.2", optional = true }
-# libzmq 4.3.2
-zeromq-src = "0.1.10"
+# libzmq 4.3.5. Builds with `cc`, so no CMake is needed (CMake 4 rejects the
+# `cmake_minimum_required` declared by the ZeroMQ sources in zeromq-src 0.1).
+zeromq-src = "0.3.6"

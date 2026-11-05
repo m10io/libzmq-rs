@@ -125,6 +125,7 @@ fn z85_decode(input: &str) -> Result<Vec<u8>, CurveError> {
 ///
 /// # Example
 /// ```
+/// # #[cfg(feature = "curve")] {
 /// use libzmq::auth::*;
 ///
 /// let cert = CurveCert::new_unique();
@@ -135,6 +136,7 @@ fn z85_decode(input: &str) -> Result<Vec<u8>, CurveError> {
 /// let derived: CurvePublicKey = cert.secret().into();
 ///
 /// assert_eq!(public, derived);
+/// # }
 /// ```
 ///
 /// [`Z85`]: https://rfc.zeromq.org/spec:32/Z85/
@@ -509,10 +511,12 @@ impl<'a> IntoIterator for &'a CurveKey {
 ///
 /// # Example
 /// ```
+/// # #[cfg(feature = "curve")] {
 /// use libzmq::auth::CurveCert;
 ///
 /// // Generate a new unique curve certificate.
 /// let cert = CurveCert::new_unique();
+/// # }
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct CurveCert {
@@ -634,6 +638,7 @@ impl<'a> From<&'a CurveSecretKey> for BinCurveKey {
 ///
 /// # Example
 /// ```
+/// # #[cfg(feature = "curve")] {
 /// use libzmq::auth::*;
 ///
 /// let server_cert = CurveCert::new_unique();
@@ -641,6 +646,7 @@ impl<'a> From<&'a CurveSecretKey> for BinCurveKey {
 ///
 /// let creds = CurveClientCreds::new(server_cert.public())
 ///     .add_cert(client_cert);
+/// # }
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct CurveClientCreds {
@@ -701,11 +707,13 @@ impl From<CurveClientCreds> for Mechanism {
 /// Credentials for a `Curve` server.
 /// # Example
 /// ```
+/// # #[cfg(feature = "curve")] {
 /// use libzmq::auth::*;
 ///
 /// let server_cert = CurveCert::new_unique();
 ///
 /// let creds = CurveServerCreds::new(server_cert.secret());
+/// # }
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct CurveServerCreds {
@@ -783,6 +791,8 @@ mod tests {
         CurveKey::new(CURVE_KEY_SECRET).unwrap();
     }
 
+    // Key derivation needs libsodium, which only the `curve` feature links.
+    #[cfg(feature = "curve")]
     #[test]
     fn curve_key_from_secret() {
         let secret = CurveKey::new(CURVE_KEY_SECRET).unwrap();
@@ -790,6 +800,8 @@ mod tests {
         assert_eq!(public.as_str(), CURVE_KEY_PUBLIC);
     }
 
+    // Key derivation needs libsodium, which only the `curve` feature links.
+    #[cfg(feature = "curve")]
     #[test]
     fn curve_cert_new_unique() {
         CurveCert::new_unique();
